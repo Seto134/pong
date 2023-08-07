@@ -1,0 +1,66 @@
+import pygame
+import random
+
+# Constants
+WIDTH, HEIGHT = 640, 480
+BALL_SPEED = 5
+PADDLE_SPEED = 6
+PADDLE_WIDTH, PADDLE_HEIGHT = 10, 80
+BALL_SIZE = 10
+WHITE = (255, 255, 255)
+
+# Initialize Pygame
+pygame.init()
+window = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Pong")
+
+# Paddles
+player_paddle = pygame.Rect(50, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+opponent_paddle = pygame.Rect(WIDTH - 50 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+
+# Ball
+ball = pygame.Rect(WIDTH // 2 - BALL_SIZE // 2, HEIGHT // 2 - BALL_SIZE // 2, BALL_SIZE, BALL_SIZE)
+ball_speed_x = BALL_SPEED * random.choice((1, -1))
+ball_speed_y = BALL_SPEED * random.choice((1, -1))
+
+# Game loop
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+
+    # Player paddle movement
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP] and player_paddle.top > 0:
+        player_paddle.y -= PADDLE_SPEED
+    if keys[pygame.K_DOWN] and player_paddle.bottom < HEIGHT:
+        player_paddle.y += PADDLE_SPEED
+
+    # Ball movement
+    ball.x += ball_speed_x
+    ball.y += ball_speed_y
+
+    # Ball collision with walls
+    if ball.top <= 0 or ball.bottom >= HEIGHT:
+        ball_speed_y *= -1
+
+    # Ball collision with paddles
+    if ball.colliderect(player_paddle) or ball.colliderect(opponent_paddle):
+        ball_speed_x *= -1
+
+    # Opponent AI (simple movement towards the ball)
+    if opponent_paddle.centery < ball.centery:
+        opponent_paddle.y += PADDLE_SPEED
+    elif opponent_paddle.centery > ball.centery:
+        opponent_paddle.y -= PADDLE_SPEED
+
+    # Draw everything
+    window.fill((0, 0, 0))
+    pygame.draw.rect(window, WHITE, player_paddle)
+    pygame.draw.rect(window, WHITE, opponent_paddle)
+    pygame.draw.ellipse(window, WHITE, ball)
+    pygame.draw.aaline(window, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))
+
+    pygame.display.update()
+
